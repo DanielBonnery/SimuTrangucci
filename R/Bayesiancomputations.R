@@ -35,7 +35,7 @@ model.text<-function(GG){
             sapply(q,function(qq){
               paste0("for (k",qq, " in 1:K_q[",qq,"]){")}),collapse=""),
           "alpha",paste("X",q,collapse=".",sep=""),"[j,",
-          paste("k",q,collapse=",",sep=""),"]~dnorm(0,1/sqrt(lambda",paste(letters[q],collapse=""),"[",
+          paste("k",q,collapse=",",sep=""),"]~dnorm(0,1/sqrt(lambda",paste("X",q,collapse=".",sep=""),"[",
           paste("k",q,collapse=",",sep=""),"]*sigma^2));",
           paste(rep("}",length(q)),collapse=""),
           collapse="")})})),collapse="\n"),
@@ -79,7 +79,7 @@ Trangucci.fit<-function(GG){
       alpha<-plyr::alply(combn(GG$Q,l),2,function(y){
         array(1,dim=c(GG$XX$J,GG$K_q[y]))})
       names(alpha)<-plyr::alply(combn(GG$Q,l),2,function(y){
-        paste0("alpha",paste("X",q,collapse=".",sep=""))})
+        paste0("alpha",paste("X",y,collapse=".",sep=""))})
       alpha
     })),
     (function(){x<-lapply(1:GG$Q,function(l){rep(1,GG$K_q[l])})
@@ -88,8 +88,8 @@ Trangucci.fit<-function(GG){
   model.texte<-model.text(GG)
   parameters.to.save = c("thetastar",
                          names(init()),
-                         plyr::alply(2:Q,1,function(l){plyr::alply(combn(Q,l),2,function(q){paste0("lambda",paste("X",q,collapse=".",sep=""))})}),
-                         plyr::alply(2:Q,1,function(l){plyr::alply(combn(Q,l),2,function(q){paste0("alpha" ,paste("X",q,collapse=".",sep=""))})})
+                         unlist(plyr::alply(2:GG$Q,1,function(l){plyr::alply(combn(GG$Q,l),2,function(qq){paste0("lambda",paste("X",qq,collapse=".",sep=""))})})),
+                         unlist(plyr::alply(2:GG$Q,1,function(l){plyr::alply(combn(GG$Q,l),2,function(qq){paste0("alpha" ,paste("X",qq,collapse=".",sep=""))})}))
                          )
   true.parameters=c(thetastar=GG$thetastar,GG$XX)
   
