@@ -1,0 +1,100 @@
+#' Compute posterior of all parameters
+#' @details 
+#' Generates X, Stratum indicator, computes N_j's and model matrix.
+#' @param N population size
+#' @param Q Number of design variables
+#' @param p maximum number of levels for design variables, >=2. 
+#' @examples
+#' GG<-Generate_all(N=1000,Q=2,p=5)
+#' library(SimuTrangucci);library(R2jags)
+#' Trangucci.fit(GG)
+
+
+model.text<-function(GG){
+  N<-GG$N
+  Q<-GG$Q
+  K_q<-GG$K_q
+  J=GG$XX$J
+  
+  paste(
+  "model{
+  for(i in 1:N){
+  y[i]~dnorm(thetastar[j_i[i]],1/sqrt(sigma_y^2))}
+  for (j in 1:J){",
+  paste0("thetastar[j]=alpha0+",paste(
+    unlist(plyr::alply(1:Q,1,function(l){
+      plyr::alply(combn(Q,l),2,function(q){                    
+        paste0("alpha",paste("X",q,collapse=".",sep=""),"[j,",
+               paste("k_qj[",q,",j]",collapse=",",sep=""),"]")})})),
+    collapse="+"),";"),
+  paste(
+    unlist(plyr::alply(1:Q,1,function(l){
+      plyr::alply(combn(Q,l),2,function(q){
+        paste0(
+          paste(
+            sapply(q,function(qq){
+              paste0("for (k",qq, " in 1:K_q[",qq,"]){")}),collapse=""),
+          "alpha",paste("X",q,collapse=".",sep=""),"[j,",
+          paste("k",q,collapse=",",sep=""),"]~dnorm(0,1/sqrt(lambda",paste(letters[q],collapse=""),"[",
+          paste("k",q,collapse=",",sep=""),"]*sigma^2));",
+          paste(rep("}",length(q)),collapse=""),
+          collapse="")})})),collapse="\n"),
+  "}",
+  paste(
+    unlist(plyr::alply(2:Q,1,function(l){
+      plyr::alply(combn(Q,l),2,function(q){
+        paste0(
+          paste(
+            sapply(q,function(qq){
+              paste0("for (k",qq, " in 1:K_q[",qq,"]){")}),collapse=""),
+          "lambda",paste("X",q,collapse=".",sep=""),"[",
+          paste("k",q,collapse=",",sep=""),"]=delta[",l,"]*",
+          paste("lambdaX",q,"[k",q,"]",collapse="*",sep=""),";",
+          paste(rep("}",length(q)),collapse=""),
+          collapse="")})})),collapse="\n"),
+  "sigma~dt(0,1,1)",
+  paste(
+    unlist(plyr::alply(1:Q,1,function(l){
+      paste0("for(k in 1:K_q[",l,"]){
+          lambdaX",l,"[k]~dnorm(0,1)}")})),collapse="\n"),
+  "for(l in 1:Q){delta[l]~dnorm(0,1)}",
+  "sigma_y~dt(0,1/sqrt(5),1)",
+  "alpha0~dnorm(0,.1)","}",sep="\n")}
+
+
+Trangucci.fit<-function(GG){
+  if(GG$Q>9){error("Q must be <10")}
+  
+  .data<-plyr::alply(GG$y,2,function(y){c(GG[c("N","Q","K_q")],list(
+    j_i=(1:GG$XX$J)[GG$XX$Xd$Strata],
+    k_qj=GG$XX$k,
+    J=GG$XX$J,
+    y=GG$y[,1]))})
+  init=function(){c(list(
+    sigma=1,
+    sigma_y=1,
+    delta=rep(.5,GG$Q),
+    alpha0=0),
+    do.call(c,lapply(1:GG$Q,function(l){
+      alpha<-plyr::alply(combn(GG$Q,l),2,function(y){
+        array(1,dim=c(GG$XX$J,GG$K_q[y]))})
+      names(alpha)<-plyr::alply(combn(GG$Q,l),2,function(y){
+        paste0("alpha",paste("X",q,collapse=".",sep=""))})
+      alpha
+    })),
+    (function(){x<-lapply(1:GG$Q,function(l){rep(1,GG$K_q[l])})
+    names(x)<-paste0("lambdaX",1:GG$Q)
+    x})())}
+  model.texte<-model.text(GG)
+  parameters.to.save = c("thetastar",
+                         names(init()),
+                         plyr::alply(2:Q,1,function(l){plyr::alply(combn(Q,l),2,function(q){paste0("lambda",paste("X",q,collapse=".",sep=""))})}),
+                         plyr::alply(2:Q,1,function(l){plyr::alply(combn(Q,l),2,function(q){paste0("alpha" ,paste("X",q,collapse=".",sep=""))})})
+                         )
+  true.parameters=c(thetastar=GG$thetastar,GG$XX)
+  
+  model.fit<-plyr::llply(.data,function(.data0){
+    jags(model.file=textConnection(model.texte),
+         data=.data0 ,
+         inits=init,
+         parameters.to.save = parameters.to.save)})}
