@@ -86,9 +86,9 @@ Trangucci.fit<-function(GG,initf="random"){
     (function(){x<-lapply(1:GG$Q,function(l){rep(1,GG$K_q[l])})
     names(x)<-paste0("lambdaX",1:GG$Q)
     x})())}}else{
-      init=function(){c(GG$hyper[c("sigma","sigma_y","delta","alpha0")]
+      init=function(){c(GG$hyper[c("sigma","sigma_y","delta","alpha0")],
                         GG$hyper$lambda1,
-                        GG$alpha
+                        list(GG$alpha),
         do.call(c,lapply(1:GG$Q,function(l){
           alpha<-plyr::alply(combn(GG$Q,l),2,function(y){
             array(1,dim=c(GG$XX$J,GG$K_q[y]))})
