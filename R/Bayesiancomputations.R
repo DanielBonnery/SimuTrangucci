@@ -62,7 +62,7 @@ model.text<-function(GG){
   "alpha0~dnorm(0,.1)","}",sep="\n")}
 
 
-Trangucci.fit<-function(GG){
+Trangucci.fit<-function(GG,initf="random"){
   if(GG$Q>9){error("Q must be <10")}
   
   .data<-plyr::alply(GG$y,2,function(y){c(GG[c("N","Q","K_q")],list(
@@ -70,6 +70,7 @@ Trangucci.fit<-function(GG){
     k_qj=GG$XX$k,
     J=GG$XX$J,
     y=GG$y[,1]))})
+  if(initf=="random"){
   init=function(){c(list(
     sigma=1,
     sigma_y=1,
@@ -84,7 +85,22 @@ Trangucci.fit<-function(GG){
     })),
     (function(){x<-lapply(1:GG$Q,function(l){rep(1,GG$K_q[l])})
     names(x)<-paste0("lambdaX",1:GG$Q)
-    x})())}
+    x})())}}else{
+      init=function(){c(GG$hyper[c("sigma","sigma_y","delta","alpha0")]
+                        GG$hyper$lambda1,
+                        GG$alpha
+        do.call(c,lapply(1:GG$Q,function(l){
+          alpha<-plyr::alply(combn(GG$Q,l),2,function(y){
+            array(1,dim=c(GG$XX$J,GG$K_q[y]))})
+          names(alpha)<-plyr::alply(combn(GG$Q,l),2,function(y){
+            paste0("alpha",paste("X",y,collapse=".",sep=""))})
+          alpha
+        })),
+        (function(){x<-lapply(1:GG$Q,function(l){rep(1,GG$K_q[l])})
+        names(x)<-paste0("lambdaX",1:GG$Q)
+        x})())}
+    }
+  
   model.texte<-model.text(GG)
   parameters.to.save = c("thetastar",
                          names(init()),

@@ -8,7 +8,7 @@
 #' N=1000;Q=2;p=5
 #' XX<-Gen_design_variables(N,Q,p)
 Gen_design_variables<-function(N,Q,p,K_q=sample(2:p,Q,replace=T)){
-  vars<-paste0("X",1:Q,"_")
+  vars<-paste0("X",1:Q)
   X<-aperm(
     plyr::aaply(K_q,1,function(x){sample(x,N,replace=T)}),2:1)
   X<-X[do.call(order,as.data.frame(X)),]
@@ -43,12 +43,12 @@ Gen_design_variables<-function(N,Q,p,K_q=sample(2:p,Q,replace=T)){
 #' lambda1f(XX)
 lambda1f<-function(XX){
   y<-plyr::alply(XX$vars,1,function(q){
-    x=abs(rnorm(XX$K_q2[q]))
-    names(x)<-as.character(1:XX$K_q2[q])
-    names(names(x))<-"k"
+    x=array(abs(rnorm(XX$K_q2[q])))
+    dimnames(x)<-list(1:XX$K_q2[q])
+    names(dimnames(x))<-"k"
     Hmisc::label(x)<-paste0("$\\lambda^{(",which(XX$vars==q),")}_k$")
     x})
-  names(y)<-XX$vars
+  names(y)<-paste0("lambda",XX$vars)
   y}
 
 
@@ -64,19 +64,18 @@ lambda1f<-function(XX){
 #' XX<-Gen_design_variables(N=1000,Q=3,p=4)
 #' lambda1=lambda1f(XX)
 #' delta=Gen_hyper_parameters(XX)$delta
-#' lambdaSif(XX,lambda1,delta)
+#' lambda=lambdaSif(XX,lambda1,delta)
 
 lambdaSif<-function(XX,lambda1,delta){
   plyr::alply(1:XX$Q,1,function(ell){
     comb<-combn(XX$Q,ell)
     dimnames(comb)<-list(q_l=paste0("q_",1:ell),q1...qell=plyr::aaply(comb,2,paste,collapse="."))
     #concernedk1...kell<-unique(XX$Strata[,q1...qell])
-    list(comb=comb,
-         lambda.q1...qell=plyr::aaply(comb,2,function(q1...qell){
+    plyr::aaply(comb,2,function(q1...qell){
            lambdas=plyr::aaply(XX$Strata[,q1...qell],1,
                                .fun=function(x){
                                  prod(plyr::aaply(1:ell,1,function(i){as.vector(lambda1[[q1...qell[i]]][x[i]])}))*delta[ell]})
-         }))
+         },.drop=FALSE)
   })}
 
 #' Create the lambda_{k1...kell}
@@ -104,7 +103,7 @@ lambdaf<-function(XX,lambda1,delta){
       names(dimnames(lambdas))<-paste0("k",1:length(dim(lambdas)))
       lambdas
     })
-    names(lambda.q1...qell)<-plyr::alply(comb,2,function(q1...qell){paste0("lambda.",paste(q1...qell,collapse="."))})
+    names(lambda.q1...qell)<-plyr::alply(comb,2,function(q1...qell){paste0("lambda.",paste("X",q1...qell,collapse=".",sep=""))})
     lambda.q1...qell
   }))}
 
@@ -125,16 +124,10 @@ lambdaf<-function(XX,lambda1,delta){
 
 alphaSif<-function(lambda,sigma){
   plyr::llply(lambda,function(x){
-    y<-x
-    dime<-if(!is.null(dim(x$lambda.q1...qell))){1:length(dim(x$lambda.q1...qell))}else{1}
-    y[2]<-list(plyr::aaply(x$lambda.q1...qell,dime,
-                           function(xx){rnorm(1,sd=sigma*xx)}))
-    names(y)[2]="alpha.q1...ql"
-    y})}
+    dime<-if(!is.null(dim(x))){1:length(dim(x))}else{1}
+    plyr::aaply(x,dime,function(xx){rnorm(1,sd=sigma*xx)},.drop=FALSE)})}
 
-
-
-#' Create the alpha_{j,k1...kell}^{q1...qell} from alpha_{Si}^{q1...qell} 
+#' Create the thetastar_{Si}^{q1...qell} 
 #'
 #' @param lamda an object with same structure than [lambda1f(XX)]
 #' @param delta an object with same structure than
@@ -145,28 +138,31 @@ alphaSif<-function(lambda,sigma){
 #' delta=Gen_hyper_parameters(XX)$delta
 #' lambda=lambdaSif(XX,lambda1,delta)
 #' sigma=Gen_hyper_parameters(XX)$sigma
-#' alphaSif(lambda,sigma)
-
-alphafromalphaSif<-function(lambda,sigma){
-  plyr::llply(lambda,function(x){
-    y<-x
-    dime<-if(!is.null(dim(x$lambda.q1...qell))){1:length(dim(x$lambda.q1...qell))}else{1}
-    y[2]<-list(plyr::aaply(x$lambda.q1...qell,dime,
-                           function(xx){rnorm(1,sd=sigma*xx)}))
-    names(y)[2]="alpha.q1...ql"
-    y})}
-
-
-
-
-
-
+#' alpha=alphaSif(lambda,sigma)
+#' alpha0=1
+#' thetastarf(alpha,alpha0)
 
 thetastarf<-function(alpha,alpha0){
-  alphas<-do.call(rbind,
-                  plyr::llply(alpha,function(x){x$alpha.q1...ql}))
+  alphas<-drop(do.call(abind,c(alpha,list(along=1))))
   dimnames(alphas)[[1]]<-1:(dim(alphas)[1])
-  thetastar<-alpha0+plyr::aaply(alphas,2,sum)}
+  alpha0+plyr::aaply(alphas,2,sum)}
+
+#' Generates y 
+#'
+#' @param lamda an object with same structure than [lambda1f(XX)]
+#' @param delta an object with same structure than
+#' @examples
+#' set.seed(1)
+#' XX<-Gen_design_variables(N=1000,Q=3,p=4)
+#' lambda1=lambda1f(XX)
+#' delta=Gen_hyper_parameters(XX)$delta
+#' lambda=lambdaSif(XX,lambda1,delta)
+#' sigma=Gen_hyper_parameters(XX)$sigma
+#' alpha=alphaSif(lambda,sigma)
+#' alpha0=1
+#' thetastar=thetastarf(alpha,alpha0)
+#' sigma_y=Gen_hyper_parameters(XX)$sigma_y
+#' yf(XX,thetastar,sigma_y,3)
 
 yf<-function(XX,thetastar,sigma_y,nrep){
   Strata<-data.frame(XX$Strata,
@@ -185,7 +181,7 @@ yf<-function(XX,thetastar,sigma_y,nrep){
 Gen_hyper_parameters<-function(XX){
   #hyper parametres
   sigma_y<-abs(5*rt(1,1))  
-  delta<-abs(rnorm(XX$J))
+  delta<-abs(rnorm(XX$Q))
   lambda1<-lambda1f(XX)
   sigma<-abs(rt(1,1))  
   alpha0<-rnorm(1,sd=sqrt(10))
