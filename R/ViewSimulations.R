@@ -12,8 +12,6 @@ ViewSimulations<-function(){
   wheretosave=file.path(Mydirectories::googledrive.directory(),"Travail/Recherche/Travaux/Rick/Simu_/data/simu1.rda")
   
   datas<-load(wheretosave)
-  bugsoutput<-gibbs.samples$`1`$BUGSoutput$sims.list
-  bugsoutput<-gibbs.samples$`1`$BUGSoutput$sims.list
   ui <- navbarPage(theme = shinytheme("slate"),
                    title="Visualize and compare datasets tool",
                    tabPanel("One table", 

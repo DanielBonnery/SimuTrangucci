@@ -62,7 +62,7 @@ Trangucci.fit<-function(GG,initf="random"){
     alpha0=0),
     do.call(c,lapply(1:GG$Q,function(l){
       alpha<-plyr::alply(combn(GG$Q,l),2,function(y){
-        array(1,dim=c(GG$XX$J,GG$K_q[y]))})
+        rep(1,GG$XX$J)})
       names(alpha)<-plyr::alply(combn(GG$Q,l),2,function(y){
         paste0("alpha.",paste("X",y,collapse=".",sep=""))})
       alpha
@@ -99,4 +99,7 @@ Trangucci.fit<-function(GG,initf="random"){
     jags(model.file=textConnection(model.texte),
          data=.data0 ,
          inits=init,
+         n.burnin=1500,
+         n.thin = 2,
+         n.iter=3000,
          parameters.to.save = parameters.to.save)})}

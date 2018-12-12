@@ -143,7 +143,7 @@ alphaSif<-function(lambda,sigma){
 #' thetastarf(alpha,alpha0)
 
 thetastarf<-function(alpha,alpha0){
-  alphas<-drop(do.call(abind,c(alpha,list(along=1))))
+  alphas<-drop(do.call(abind::abind,c(alpha,list(along=1))))
   dimnames(alphas)[[1]]<-1:(dim(alphas)[1])
   alpha0+plyr::aaply(alphas,2,sum)}
 
