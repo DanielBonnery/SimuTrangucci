@@ -18,15 +18,13 @@ model.text<-function(GG){
   
   paste(
   "model{
-  for(i in 1:N){
-  y[i]~dnorm(thetastar[j_i[i]],1/sqrt(sigma_y^2))}
-  for (j in 1:J){",
-  paste0("thetastar[j]=alpha0+",paste(
+  for(i in 1:N){y[i]~dnorm(thetastar[j_i[i]],1/sqrt(sigma_y^2));}"
+  ,
+  paste0("for (j in 1:J){thetastar[j]=alpha0+",paste(
     unlist(plyr::alply(1:Q,1,function(l){
       plyr::alply(combn(Q,l),2,function(q){                    
-        paste0("alpha.",paste("X",q,collapse=".",sep=""),"[j,",
-               paste("k_qj[",q,",j]",collapse=",",sep=""),"]")})})),
-    collapse="+"),";"),
+        paste0("alpha.",paste("X",q,collapse=".",sep=""),"[j]")})})),
+    collapse="+"),";}"),
   paste(
     unlist(plyr::alply(1:Q,1,function(l){
       plyr::alply(combn(Q,l),2,function(q){
@@ -39,13 +37,12 @@ model.text<-function(GG){
         
           "for (j in 1:J){lambda.",paste("X",q,collapse=".",sep=""),"[j]=delta[",l,"]*",
           paste("lambda0.X",q,"[k_qj[",q,",j]]",collapse="*",sep=""),";}")})})),collapse="\n"),
-  "sigma~dt(0,1,1)",
   paste(
     unlist(plyr::alply(1:Q,1,function(l){
-      paste0("for(k in 1:K_q[",l,"]){
-          lambda0.X",l,"[k]~dnorm(0,1)}")})),collapse="\n"),
+      paste0("for(k in 1:K_q[",l,"]){lambda0.X",l,"[k]~dnorm(0,1)}")})),collapse="\n"),
   "for(l in 1:Q){delta[l]~dnorm(0,1)}",
   "sigma_y~dt(0,1/sqrt(5),1)",
+  "sigma~dt(0,1,1)",
   "alpha0~dnorm(0,.1)","}",sep="\n")}
 
 
