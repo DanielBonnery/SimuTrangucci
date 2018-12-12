@@ -48,7 +48,7 @@ lambda1f<-function(XX){
     names(dimnames(x))<-"k"
     Hmisc::label(x)<-paste0("$\\lambda^{(",which(XX$vars==q),")}_k$")
     x})
-  names(y)<-paste0("lambda.",XX$vars)
+  names(y)<-paste0("lambda0.",XX$vars)
   y}
 
 
@@ -197,7 +197,7 @@ Gen_hyper_parameters<-function(XX){
 #'
 #' @param XX an output from [Gen_design_variables] 
 #' @examples
-#' N=1000;Q=2;p=3
+#' N=1000;Q=3;p=3
 #' GG<-Generate_all(N,Q,p)
 
 Generate_all<-function(N=NULL,
