@@ -8,20 +8,19 @@
 #' N=1000;Q=2;p=5
 #' XX<-Gen_design_variables(N,Q,p)
 Gen_design_variables<-function(N,Q,p,K_q=sample(2:p,Q,replace=T)){
-  vars<-paste0("X",1:Q)
-  X<-aperm(
-    plyr::aaply(K_q,1,function(x){sample(x,N,replace=T)}),2:1)
-  X<-X[do.call(order,as.data.frame(X)),]
-  dimnames(X)<-list(k=1:N,Variable=vars)
-  Strata<-unique.array(X,margin=1)
-  J<-dim(Strata)[1]
-  Strata=cbind(Strata,Strata=paste0("S",1:J))
+  vars<-paste0("X",1:Q)#names of the variables : X1 ...XQ
+  X<-aperm(plyr::aaply(K_q,1,function(x){sample(x,N,replace=T)}),2:1)#Creation of the matrix of X1...XQ
+  X<-X[do.call(order,as.data.frame(X)),]#order X by X1...XQ
+  dimnames(X)<-list(k=1:N,Variable=vars)#rename dimensions of X
+  Strata<-unique.array(X,margin=1)#Look at unique combinaisons of X1...XQ on the population
+  J<-dim(Strata)[1]#Definition of J: number of strata
+  Strata=cbind(Strata,Strata=paste0("S",1:J))#Defintion of the Strata variable
   rownames(Strata)<-Strata[,"Strata"]
-  merge(X,Strata, by=colnames(X))->Xd
-  Xd[1:Q]<-plyr::llply(Xd[1:Q],as.factor)
-  K_q2<-plyr::laply(Xd[1:Q],nlevels)
-  names(K_q2)<-vars
-  names(Xd$Strata)<-NULL
+  merge(X,Strata, by=colnames(X))->Xd#Creates Xd: rows:1 to N, columns X1 to XQ and Stratum
+  Xd[1:Q]<-plyr::llply(Xd[1:Q],as.factor)#Convert columns of Xd to factor
+  K_q2<-plyr::laply(Xd[1:Q],nlevels)  #Computes the effective number of levels for each stratum
+  names(K_q2)<-vars                   #Rename elements of K_q2
+  names(Xd$Strata)<-NULL              #Remove names from Xd$Strata
   list(Xd=Xd,
        vars=vars,
        Q=Q,
@@ -43,15 +42,9 @@ Gen_design_variables<-function(N,Q,p,K_q=sample(2:p,Q,replace=T)){
 #' lambda1f(XX)
 lambda1f<-function(XX){
   y<-plyr::alply(XX$vars,1,function(q){
-    x=array(abs(rnorm(XX$K_q2[q])))
-    dimnames(x)<-list(1:XX$K_q2[q])
-    names(dimnames(x))<-"k"
-    Hmisc::label(x)<-paste0("$\\lambda^{(",which(XX$vars==q),")}_k$")
-    x})
+    abs(rnorm(XX$K_q2[q]))})
   names(y)<-paste0("lambda0.",XX$vars)
   y}
-
-
 #' Create the lambda_{S_i}^{q1...qell} 
 #' lambda_{k1...kell}^{q1...qell}  can be deduced from the lambda_{S_i}^{q1...qell}
 #' If for example, Q=3, ell=2, q_1=1, q_2=2, k_1=k_2=1, then there will be many strata S_i
@@ -64,8 +57,7 @@ lambda1f<-function(XX){
 #' XX<-Gen_design_variables(N=1000,Q=3,p=4)
 #' lambda1=lambda1f(XX)
 #' delta=Gen_hyper_parameters(XX)$delta
-#' lambda=lambdaSif(XX,lambda1,delta)
-
+#' lambdaSif(XX,lambda1,delta)
 lambdaSif<-function(XX,lambda1,delta){
   plyr::alply(1:XX$Q,1,function(ell){
     comb<-combn(XX$Q,ell)
