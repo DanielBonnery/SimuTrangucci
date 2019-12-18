@@ -31,8 +31,8 @@ for(i in 1:N){y[i]~dnorm(thetastar[j_i[i]],1/sqrt(sigma_y^2));}",
           unlist(plyr::alply(1:Q,1,function(l){
             paste0("for(k in 1:K_q[",l,"]){lambda0.X",l,"[k]~dnorm(0,1)}")})),collapse="\n"),
         "for(l in 1:Q){delta[l]~dnorm(0,1)}",
-        "sigma=abs(sigmarel)"
-        "sigma_y=abs(sigma_yrel)"
+        "sigma=abs(sigmarel)",
+        "sigma_y=abs(sigma_yrel)",
         "sigma_yrel~dt(0,1/sqrt(5),1)",
         "sigmarel~dt(0,1,1)",
         "alpha0~dnorm(0,.1)","}",sep="\n")}
