@@ -157,6 +157,7 @@ thetastarf<-function(alpha,alpha0){
   dimnames(alphas)[[1]]<-1:(dim(alphas)[1])
   alpha0+plyr::aaply(alphas,2,sum)}
 
+
 #' Generates y 
 #'
 #' @param lamda an object with same structure than [gamma0f(XX)]
