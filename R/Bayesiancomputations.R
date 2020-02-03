@@ -53,8 +53,8 @@ Trangucci.fit<-function(GG,initf="random"){
     y=GG$y[,1]))})
   if(initf=="random"){
     init=function(){c(list(
-      sigma=1,
-      sigma_y=1,
+      sigmarel=1,
+      sigma_yrel=1,
       delta=rep(.5,GG$Q),
       alpha0=0),
       do.call(c,lapply(1:GG$Q,function(l){
