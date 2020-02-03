@@ -47,29 +47,35 @@ Gen_design_variables<-function(N,Q,p,K_q=sample(2:p,Q,replace=T)){
            function(x){model.matrix(as.formula(paste0("~0+",x)),Xd)})),
        k=plyr::maply(expand.grid(q=1:Q,j=1:J),function(q,j){Strata[j,q]}))
 }
-#' Generate gammas
+#' Generate gamma0s
 #' @argument XX output from \code[Gen_design_variables]
 #' @examples
 #' XX<-Gen_design_variables(N=1000,Q=3,p=4)
-#' gammaf(XX)
-gammaf<-function(XX){
+#' gamma0f(XX)
+gamma0f<-function(XX){
   y<-plyr::alply(XX$vars,1,function(q){
-    abs(rnorm(XX$K_q2[q]))})
-  names(y)<-paste0("gamma.",XX$vars)
+    x<-abs(rnorm(XX$K_q2[q]))
+    names(x)<-1:XX$K_q2[q]
+    x})
+  names(y)<-paste0("gamma0.",XX$vars)
   y}
+
 #' Create the lambda_{j}^{q1...qell} 
 #' lambda_{k1...kell}^{q1...qell}  can be deduced from the lambda_{S_i}^{q1...qell}
 #' If for example, Q=3, ell=2, q_1=1, q_2=2, k_1=k_2=1, then there will be many strata S_i
 #' that correspond to X_{q_1}=1, X_{q_2}=1, and all of them will have the same value for 
 #' lambda_{S_i}^{q1=1...q2=2}
 #' @param XX an output from [Gen_design_variables] 
-#' @param gamma an object with same structure than [gammaf(XX)]
+#' @param gamma0 an object with same structure than [gamma0f(XX)]
 #' @param delta an object with same structure than [Gen_hyper_parameters(XX)$delta]
 #' @examples
 #' XX<-Gen_design_variables(N=1000,Q=3,p=4)
-#' gamma=gammaf(XX)
+#' gamma0=gamma0f(XX)
+#' delta=Gen_hyper_parameters(XX)$delta
+#' lambda.j.q1...qell.f(XX,gamma0,delta)
 
-lambda.j.q1...qell.f<-function(XX,gamma,delta){
+lambda.j.q1...qell.f<-function(XX,gamma0,delta){
+  #print(XX$Q)
   plyr::alply(1:XX$Q,1,function(ell){
     comb<-combn(XX$Q,ell)
     dimnames(comb)<-list(q_l=paste0("q_",1:ell),q1...qell=plyr::aaply(comb,2,paste,collapse="."))
@@ -77,22 +83,22 @@ lambda.j.q1...qell.f<-function(XX,gamma,delta){
     plyr::aaply(comb,2,function(q1...qell){
            lambdas=plyr::aaply(XX$Strata[,q1...qell,drop=FALSE],1,
                                .fun=function(x){
-                                 prod(plyr::aaply(1:ell,1,function(i){as.vector(gamma[[q1...qell[i]]][x[i]])}))*delta[ell]})
+                                 prod(plyr::aaply(1:ell,1,function(i){as.vector(gamma0[[q1...qell[i]]][x[i]])}))*delta[ell]})
          },.drop=FALSE)
   })}
 
 #' Create the lambda_{k1...kell}
 #' @param XX an output from [Gen_design_variables] 
-#' @param gamma an object with same structure than [gammaf(XX)]
+#' @param gamma0 an object with same structure than [gamma0f(XX)]
 #' @param delta an object with same structure than [Gen_hyper_parameters(XX)$delta]
 #' @examples
 #' XX<-Gen_design_variables(N=1000,Q=3,p=4)
-#' gamma=gammaf(XX)
+#' gamma0=gamma0f(XX)
 #' delta=Gen_hyper_parameters(XX)$delta
-#' lambda.j.q1...qell.f(XX,gamma,delta)
-#' #' lambdaf(XX,gamma,delta)
+#' lambda.j.q1...qell.f(XX,gamma0,delta)
+#' #' lambdaf(XX,gamma0,delta)
 
-lambdaf<-function(XX,gamma,delta){
+lambdaf<-function(XX,gamma0,delta){
   do.call(c,lapply(1:XX$Q,function(ell){
     comb<-combn(XX$Q,ell)
     dimnames(comb)<-list(q_l=paste0("q_",1:ell),q1...qell=plyr::aaply(comb,2,paste,collapse="."))
@@ -101,7 +107,7 @@ lambdaf<-function(XX,gamma,delta){
     lambda.q1...qell=plyr::alply(comb,2,function(q1...qell){
       lambdas=plyr::aaply(unique(XX$Strata[,q1...qell]),1,
                           .fun=function(x){
-                            prod(plyr::aaply(1:ell,1,function(i){as.vector(gamma[[q1...qell[i]]][x[i]])}))*delta[ell]})
+                            prod(plyr::aaply(1:ell,1,function(i){as.vector(gamma0[[q1...qell[i]]][x[i]])}))*delta[ell]})
       lambdas<-array(lambdas,dim=XX$K_q[q1...qell])
       dimnames(lambdas)<-lapply(dim(lambdas),function(x){1:x})
       names(dimnames(lambdas))<-paste0("k",1:length(dim(lambdas)))
@@ -115,14 +121,14 @@ lambdaf<-function(XX,gamma,delta){
 
 #' Create the alpha_{Si}^{q1...qell} 
 #'
-#' @param lamda an object with same structure than [gammaf(XX)]
+#' @param lamda an object with same structure than [gamma0f(XX)]
 #' @param delta an object with same structure than
 #' @examples
 #' set.seed(1)
 #' XX<-Gen_design_variables(N=1000,Q=3,p=4)
-#' gamma=gammaf(XX)
+#' gamma0=gamma0f(XX)
 #' delta=Gen_hyper_parameters(XX)$delta
-#' lambda=lambda.j.q1...qell.f(XX,gamma,delta)
+#' lambda=lambda.j.q1...qell.f(XX,gamma0,delta)
 #' sigma=Gen_hyper_parameters(XX)$sigma
 #' alphaSif(lambda,sigma)
 
@@ -133,14 +139,14 @@ alphaSif<-function(lambda,sigma){
 
 #' Create the thetastar_{Si}^{q1...qell} 
 #'
-#' @param lamda an object with same structure than [gammaf(XX)]
+#' @param lamda an object with same structure than [gamma0f(XX)]
 #' @param delta an object with same structure than
 #' @examples
 #' set.seed(1)
 #' XX<-Gen_design_variables(N=1000,Q=3,p=4)
-#' gamma=gammaf(XX)
+#' gamma0=gamma0f(XX)
 #' delta=Gen_hyper_parameters(XX)$delta
-#' lambda=lambda.j.q1...qell.f(XX,gamma,delta)
+#' lambda=lambda.j.q1...qell.f(XX,gamma0,delta)
 #' sigma=Gen_hyper_parameters(XX)$sigma
 #' alpha=alphaSif(lambda,sigma)
 #' alpha0=1
@@ -153,14 +159,14 @@ thetastarf<-function(alpha,alpha0){
 
 #' Generates y 
 #'
-#' @param lamda an object with same structure than [gammaf(XX)]
+#' @param lamda an object with same structure than [gamma0f(XX)]
 #' @param delta an object with same structure than
 #' @examples
 #' set.seed(1)
 #' XX<-Gen_design_variables(N=1000,Q=3,p=4)
-#' gamma=gammaf(XX)
+#' gamma0=gamma0f(XX)
 #' delta=Gen_hyper_parameters(XX)$delta
-#' lambda=lambda.j.q1...qell.f(XX,gamma,delta)
+#' lambda=lambda.j.q1...qell.f(XX,gamma0,delta)
 #' sigma=Gen_hyper_parameters(XX)$sigma
 #' alpha=alphaSif(lambda,sigma)
 #' alpha0=1
@@ -187,12 +193,12 @@ Gen_hyper_parameters<-function(XX){
   #hyper parametres
   sigma_y<-abs(5*rt(1,1))  
   delta<-abs(rnorm(XX$Q))
-  gamma<-gammaf(XX)
+  gamma0<-gamma0f(XX)
   sigma<-abs(rt(1,1))  
   alpha0<-rnorm(1,sd=sqrt(10))
   list(sigma_y=sigma_y,
        delta=delta,
-       gamma=gamma,
+       gamma0=gamma0,
        sigma=sigma,
        alpha0=alpha0)
 }
@@ -212,7 +218,7 @@ Generate_all<-function(N=NULL,
                        hyper=Gen_hyper_parameters(XX),
                        nrep=3){
   #depending parameters  
-  lambda<-lambda.j.q1...qell.f(XX,hyper$gamma,hyper$delta)
+  lambda<-lambda.j.q1...qell.f(XX,hyper$gamma0,hyper$delta)
   alpha<-alphaSif(lambda,hyper$sigma)
   thetastar<-thetastarf(alpha,hyper$alpha0)
   y<-yf(XX,thetastar,hyper$sigma_y,nrep)
