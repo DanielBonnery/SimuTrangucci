@@ -47,7 +47,7 @@ for(i in 1:N){y[i]~dnorm(thetastar[j_i[i]],1/sqrt(sigma_y^2));}",
 Trangucci.fit<-function(GG,initf="random"){
   if(GG$Q>9){error("Q must be <10")}
   .data<-plyr::alply(GG$y,2,function(y){c(GG[c("N","Q","K_q")],list(
-    j_i=(1:GG$XX$J)[GG$XX$Xd$Strata],
+    j_i=(1:GG$XX$J)[strtoi(substr(GG$XX$Xd$Strata,2,length(GG$XX$Xd$Strata)-1))],
     k_qj=GG$XX$k,
     J=GG$XX$J,
     y=GG$y[,1]))})
@@ -98,4 +98,6 @@ Trangucci.fit<-function(GG,initf="random"){
          n.burnin=1500,
          n.thin = 2,
          n.iter=3000,
-         parameters.to.save = parameters.to.save)})}
+         parameters.to.save = parameters.to.save)})
+  }
+

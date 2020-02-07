@@ -23,13 +23,13 @@
 Gen_design_variables<-function(N,Q,p,K_q=sample(2:p,Q,replace=T)){
   vars<-paste0("X",1:Q)#names of the variables : X1 ...XQ
   X<-aperm(plyr::aaply(K_q,1,function(x){sample(x,N,replace=T)}),2:1)#Creation of the matrix of X1...XQ
-  X<-X[do.call(order,as.data.frame(X)),]#order X by X1...XQ
+  X<-X[do.call(order,data.frame(X,stringsAsFactors = FALSE)),]#order X by X1...XQ
   dimnames(X)<-list(k=1:N,Variable=vars)#rename dimensions of X
   Strata<-unique.array(X,margin=1)#Look at unique combinaisons of X1...XQ on the population
   J<-dim(Strata)[1]#Definition of J: number of strata
   Strata=cbind(Strata,Strata=paste0("S",1:J))#Defintion of the Strata variable
   rownames(Strata)<-Strata[,"Strata"]
-  merge(X,Strata, by=colnames(X))->Xd#Creates Xd: rows:1 to N, columns X1 to XQ and Stratum
+  merge(data.frame(X,stringsAsFactors = FALSE),data.frame(Strata,stringsAsFactors = FALSE), by=colnames(X))->Xd#Creates Xd: rows:1 to N, columns X1 to XQ and Stratum
   Xd[1:Q]<-plyr::llply(Xd[1:Q],as.factor)#Convert columns of Xd to factor
   K_q2<-plyr::laply(Xd[1:Q],nlevels)  #Computes the effective number of levels for each stratum
   names(K_q2)<-vars                   #Rename elements of K_q2
@@ -39,7 +39,7 @@ Gen_design_variables<-function(N,Q,p,K_q=sample(2:p,Q,replace=T)){
        Q=Q,
        K_q=K_q,
        K_q2=K_q2,
-       N_j=plyr::daply(Xd,~Strata,nrow),
+       N_j=plyr::daply(Xd,~Strata,nrow)[Strata[,"Strata"]],
        Strata=Strata,
        J=J,
        X.model.matrix=do.call(
@@ -177,11 +177,17 @@ thetastarf<-function(alpha,alpha0){
 #' yf(XX,thetastar,sigma_y,3)
 
 yf<-function(XX,thetastar,sigma_y,nrep){
-  Strata<-data.frame(XX$Strata,
+  Strata<-data.frame(Strata=XX$Strata[,"Strata"],
                      N_j=XX$N_j,
-                     thetastar=thetastar)
-  do.call(rbind,plyr::alply(1:nrow(Strata),1,function(x){matrix(rnorm(Strata$N_j[x]*nrep,mean=Strata$thetastar[x],sd=sigma_y),Strata$N_j[x],nrep)}))
-}
+                     thetastar=thetastar,
+                     stringsAsFactors = FALSE)
+  do.call(rbind,plyr::alply(1:nrow(Strata),1,function(x){matrix(rnorm(Strata$N_j[x]*nrep,
+                                                                      mean=Strata$thetastar[x],sd=sigma_y),Strata$N_j[x],nrep)}))
+  #plot(merge(XX$Xd,Strata,by="Strata")$thetastar,y[,1])
+  
+  
+  do.call(rbind,plyr::alply(1:nrow(Strata),1,function(x){matrix(rep(Strata$Strata[x],Strata$N_j[x]),Strata$N_j[x],1)}))
+  }
 
 
 

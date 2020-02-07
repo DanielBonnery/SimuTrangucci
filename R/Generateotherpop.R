@@ -85,3 +85,36 @@ Generateother_all<-function(N=NULL,
   thetastar<-thetastarf(alpha,hyper$alpha0)
   y<-yf(XX,thetastar,hyper$sigma_y,nrep)
   list(N=N,Q=Q,p=p,K_q=K_q,hyper=hyper,XX=XX,nrep=nrep,lambda=lambda,alpha=alpha,thetastar=thetastar,y=y)}
+
+
+thetastar.popmean._f<-function(GG){
+  
+  XX<-cbind(GG$XX$Xd,Y<-GG$y[,1])
+  XX<-merge(XX,data.frame(thetastar=GG$thetastar,Strata=names(GG$thetastar)),by="Strata")
+  plyr::ddply(XX,~Strata,function(d){
+    data.frame(
+      thetastar=unique(d$thetastar),
+      Pop.Mean=mean(d$Y))})
+}
+
+plotthetastarvsydisp<-function(GG){
+  
+  hyper$sigma_y<-0
+  GG<-Generate_all(N=10000,Q=3,p=5,nrep=2,hyper = hyper)
+  GG$XX$K_q
+  
+  library(forcats)
+  XX<-cbind(GG$XX$Xd,Y=GG$y[,1])
+  XX<-merge(XX,data.frame(thetastar=GG$thetastar,N_j=GG$XX$N_j,Strata=names(GG$thetastar)),by="Strata")
+  XX$Strata2<-forcats::fct_reorder(.f = XX$Strata,.x = XX$thetastar,.fun=median)
+  lm(XX$Y~XX$thetastar)
+  ggplot(XX,aes(x=Strata2,y=Y))+geom_boxplot()+geom_point(aes(x=Strata2,y=thetastar),color="red")
+  
+  plyr::ddply(XX,~Strata,function(d){
+    data.frame(
+      thetastar=unique(d$thetastar),
+      Pop.Mean=mean(d$Y))})
+  
+  
+}
+
