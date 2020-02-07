@@ -1,4 +1,5 @@
 #' Generate design variables
+#' 
 #' @details 
 #' Generates X, Stratum indicator, computes N_j's and model matrix.
 #' @param N population size
@@ -48,7 +49,7 @@ Gen_design_variables<-function(N,Q,p,K_q=sample(2:p,Q,replace=T)){
        k=plyr::maply(expand.grid(q=1:Q,j=1:J),function(q,j){Strata[j,q]}))
 }
 #' Generate gamma0s
-#' @argument XX output from \code[Gen_design_variables]
+#' @param XX output from \code[Gen_design_variables]
 #' @examples
 #' XX<-Gen_design_variables(N=1000,Q=3,p=4)
 #' gamma0f(XX)
@@ -182,6 +183,8 @@ yf<-function(XX,thetastar,sigma_y,nrep){
   do.call(rbind,plyr::alply(1:nrow(Strata),1,function(x){matrix(rnorm(Strata$N_j[x]*nrep,mean=Strata$thetastar[x],sd=sigma_y),Strata$N_j[x],nrep)}))
 }
 
+
+
 #' Create model hyper-parameters and parameters procedure
 #'
 #' @param XX an output from [Gen_design_variables] 
@@ -190,7 +193,21 @@ yf<-function(XX,thetastar,sigma_y,nrep){
 #' XX<-Gen_design_variables(N,Q,p)
 #' Gen_hyper_parameters(XX)
 
-Gen_hyper_parameters<-function(XX){
+Gen_hyper_parameters<-function(XX,model="model1"){
+  (get(paste0("Gen_hyper_parameters_",model)))(XX)}
+
+
+
+
+#' Create model 1 hyper-parameters and parameters procedure
+#'
+#' @param XX an output from [Gen_design_variables] 
+#' @examples
+#' N=1000;Q=2;p=3
+#' XX<-Gen_design_variables(N,Q,p)
+#' Gen_hyper_parameters_model1(XX)
+
+Gen_hyper_parameters_model1<-function(XX){
   #hyper parametres
   sigma_y<-abs(5*rt(1,1))  
   delta<-abs(rnorm(XX$Q))
@@ -204,6 +221,32 @@ Gen_hyper_parameters<-function(XX){
        alpha0=alpha0)
 }
 
+
+
+#' Create model 2 hyper-parameters and parameters procedure
+#'
+#' @param XX an output from [Gen_design_variables] 
+#' @examples
+#' N=1000;Q=2;p=3
+#' XX<-Gen_design_variables(N,Q,p)
+#' Gen_hyper_parameters_model2(XX)
+
+Gen_hyper_parameters_model2<-function(XX){
+  #hyper parametres
+  sigma_y<-abs(5*rt(1,1))  
+  delta<-abs(rnorm(XX$Q))
+  gamma0<-gamma0f(XX)
+  sigma<-abs(rt(1,1))  
+  alpha0<-rnorm(1,sd=sqrt(10))
+  list(sigma_y=sigma_y,
+       delta=delta,
+       gamma0=gamma0,
+       sigma=sigma,
+       alpha0=alpha0)
+}
+
+
+
 #' Create model hyper-parameters and parameters procedure
 #'
 #' @param XX an output from [Gen_design_variables] 
@@ -216,7 +259,8 @@ Generate_all<-function(N=NULL,
                        p=NULL,
                        K_q=sample(2:p,Q,replace=T),
                        XX=Gen_design_variables(N,Q,p,K_q),
-                       hyper=Gen_hyper_parameters(XX),
+                       model="model1",
+                       hyper=Gen_hyper_parameters(XX,model),
                        nrep=3){
   #depending parameters  
   lambda<-lambda.j.q1...qell.f(XX,hyper$gamma0,hyper$delta)

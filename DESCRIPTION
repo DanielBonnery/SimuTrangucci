@@ -1,8 +1,8 @@
 Package: SimuTrangucci
 Type: Package
 Title: X
-Version: 1.0 
-Date: 2020-02-03
+Version: 1.0
+Date: 2020-02-07
 Author: D. Bonnery
 Maintainer: D. Bonnery  <dbonnery@umd.edu>
 Imports: R2jags
@@ -11,3 +11,4 @@ Description: Data
 License: GPL (>= 2)
 LazyLoad: yes
 LazyData: true
+RoxygenNote: 7.0.2
