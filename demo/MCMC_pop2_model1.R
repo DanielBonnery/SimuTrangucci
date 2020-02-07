@@ -12,7 +12,7 @@ GG$XX$K_q
 
 
 
-x<-try(gibbs.samples<-Trangucci.fit(GG))
+gibbs.samples<-Trangucci.fit(GG)
 x=inherits(x,"try-error")
 seed=seed+1}
 GG$XX$K_q
