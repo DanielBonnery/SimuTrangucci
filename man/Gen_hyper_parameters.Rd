@@ -4,9 +4,9 @@
 \alias{Gen_hyper_parameters}
 \title{Create model hyper-parameters and parameters procedure}
 \usage{
-Gen_hyper_parameters(XX)
+Gen_hyper_parameters(XX, model = "model1")
 
-Gen_hyper_parameters(XX)
+Gen_hyper_parameters(XX, model = "model1")
 }
 \arguments{
 \item{XX}{an output from [Gen_design_variables]}

@@ -10,7 +10,8 @@ Generate_all(
   p = NULL,
   K_q = sample(2:p, Q, replace = T),
   XX = Gen_design_variables(N, Q, p, K_q),
-  hyper = Gen_hyper_parameters(XX),
+  model = "model1",
+  hyper = Gen_hyper_parameters(XX, model),
   nrep = 3
 )
 }
