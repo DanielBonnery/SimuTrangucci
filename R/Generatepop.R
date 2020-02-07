@@ -48,11 +48,13 @@ Gen_design_variables<-function(N,Q,p,K_q=sample(2:p,Q,replace=T)){
            function(x){model.matrix(as.formula(paste0("~0+",x)),Xd)})),
        k=plyr::maply(expand.grid(q=1:Q,j=1:J),function(q,j){Strata[j,q]}))
 }
+
 #' Generate gamma0s
-#' @param XX output from Gen_design_variables
+#' @param XX output from \code{Gen_design_variables}
 #' @examples
 #' XX<-Gen_design_variables(N=1000,Q=3,p=4)
 #' gamma0f(XX)
+
 gamma0f<-function(XX){
   y<-plyr::alply(XX$vars,1,function(q){
     x<-abs(rnorm(XX$K_q2[q]))
