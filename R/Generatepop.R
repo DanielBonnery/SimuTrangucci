@@ -50,7 +50,7 @@ Gen_design_variables<-function(N,Q,p,K_q=sample(2:p,Q,replace=T)){
 }
 
 #' Generate gamma0s
-#' @param XX output from \code{Gen_design_variables}
+#' @param XX output from Gendesignvariables
 #' @examples
 #' XX<-Gen_design_variables(N=1000,Q=3,p=4)
 #' gamma0f(XX)
