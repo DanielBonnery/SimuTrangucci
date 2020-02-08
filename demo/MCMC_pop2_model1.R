@@ -4,15 +4,8 @@ library(ggplot2)
 library(plyr)
 
 
-seed=1
-x=TRUE
-while(x){
-set.seed(seed)
 GG<-Generate_all(N=10000,Q=4,p=5,nrep=2)
-x=try(gibbs.samples<-Trangucci.fit(GG))
-x=inherits(x,"try-error")
-seed=seed+1
-}
+gibbs.samples<-Trangucci.fit(GG)
 
 
 X=data.frame(j=1:GG$XX$J,thetastar=GG$thetastar,t(gibbs.samples[[1]]$BUGSoutput$sims.list$thetastar[sample(nrow(gibbs.samples[[1]]$BUGSoutput$sims.list$thetastar),100),]))
@@ -43,7 +36,7 @@ r<-ggplot_build(graph5)$layout$panel_params[[1]]$x.range
 s<-ggplot_build(graph5)$layout$panel_params[[1]]$y.range
 t<-c(min(r[1],s[1]),max(r[2],s[2]))
 graph5<-graph5+coord_equal(xlim=t,ylim=t)+ylab("mean (disc), posterior mean (triangle)")
-graph4<-ggplot(ZZZ,aes(x="\\theta^\star",     y=mean))+geom_point()+geom_abline(slope=1,intercept=0)+coord_equal(xlim=t,ylim=t)
+graph4<-ggplot(ZZZ,aes(x=thetastar,     y=mean))+geom_point()+geom_abline(slope=1,intercept=0)+coord_equal(xlim=t,ylim=t)
 graph2<-ggplot(ZZZ,aes(x=thetastar,y=posteriormean))+geom_point()+geom_abline(slope=1,intercept=0)+coord_equal(xlim=t,ylim=t)+geom_smooth()
 graph3<-ggplot(ZZZ,aes(x=mean,     y=posteriormean))+geom_point()+geom_abline(slope=1,intercept=0)+coord_equal(xlim=t,ylim=t)
 graph6<-ggplot(reshape2::melt(ZZZ[c("j","thetastar","mean","posteriormean")],id.vars=c("j")),aes(x=j,y=value,colour=variable))+geom_line()
