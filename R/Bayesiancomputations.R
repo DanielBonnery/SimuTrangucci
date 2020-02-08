@@ -83,8 +83,7 @@ Trangucci.fit<-function(GG,initf="random"){
                           x})())}
       }
   model.texte<-model.text(GG)
-  parameters.to.save = c("thetastar")
-  ,
+  parameters.to.save = c("thetastar",
                          names(init()),
                          paste0("lambda0.X",1:GG$Q),
                          unlist(plyr::alply(1:GG$Q,1,function(l){plyr::alply(combn(GG$Q,l),2,function(qq){paste0("lambda.",paste("X",qq,collapse=".",sep=""))})})),
