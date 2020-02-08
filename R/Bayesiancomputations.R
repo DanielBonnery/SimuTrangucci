@@ -19,7 +19,7 @@ for(i in 1:N){y[i]~dnorm(thetastar[j_i[i]],1/sqrt(sigma_y^2));}",
         paste(
           unlist(plyr::alply(1:Q,1,function(l){
             plyr::alply(combn(Q,l),2,function(q){
-              paste0("for (j in 1:J){alpha.",paste("X",q,collapse=".",sep=""),"[j]~dnorm(0,1/sqrt(lambda.",paste("X",q,collapse=".",sep=""),"[j]*sigma)^2);}"
+              paste0("for (j in 1:J){alpha.",paste("X",q,collapse=".",sep=""),"[j]~dnorm(0,1/sqrt((lambda.",paste("X",q,collapse=".",sep=""),"[j]*sigma)^2));}"
               )})})),collapse="\n"),
         paste(
           unlist(plyr::alply(1:Q,1,function(l){
@@ -83,7 +83,8 @@ Trangucci.fit<-function(GG,initf="random"){
                           x})())}
       }
   model.texte<-model.text(GG)
-  parameters.to.save = c("thetastar",
+  parameters.to.save = c("thetastar")
+  ,
                          names(init()),
                          paste0("lambda0.X",1:GG$Q),
                          unlist(plyr::alply(1:GG$Q,1,function(l){plyr::alply(combn(GG$Q,l),2,function(qq){paste0("lambda.",paste("X",qq,collapse=".",sep=""))})})),

@@ -2,20 +2,18 @@ library(SimuTrangucci)
 library(R2jags)
 library(ggplot2)
 library(plyr)
-x=TRUE
+
+
 seed=1
+x=TRUE
 while(x){
 set.seed(seed)
-
 GG<-Generate_all(N=10000,Q=4,p=5,nrep=2)
-GG$XX$K_q
-
-
-
-gibbs.samples<-Trangucci.fit(GG)
+x=try(gibbs.samples<-Trangucci.fit(GG))
 x=inherits(x,"try-error")
-seed=seed+1}
-GG$XX$K_q
+seed=seed+1
+}
+
 
 X=data.frame(j=1:GG$XX$J,thetastar=GG$thetastar,t(gibbs.samples[[1]]$BUGSoutput$sims.list$thetastar[sample(nrow(gibbs.samples[[1]]$BUGSoutput$sims.list$thetastar),100),]))
 names(X[3:ncol(X)])<-paste0("rep",1:(ncol(X)-2))

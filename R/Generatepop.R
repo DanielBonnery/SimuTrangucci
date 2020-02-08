@@ -190,7 +190,7 @@ yf<-function(XX,thetastar,sigma_y,nrep){
   #plot(merge(XX$Xd,Strata,by="Strata")$thetastar,y[,1])
   
   
-  do.call(rbind,plyr::alply(1:nrow(Strata),1,function(x){matrix(rep(Strata$Strata[x],Strata$N_j[x]),Strata$N_j[x],1)}))
+  #do.call(rbind,plyr::alply(1:nrow(Strata),1,function(x){matrix(rep(Strata$Strata[x],Strata$N_j[x]),Strata$N_j[x],1)}))
   }
 
 
