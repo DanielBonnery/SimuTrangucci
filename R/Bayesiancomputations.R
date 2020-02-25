@@ -26,10 +26,10 @@ for(i in 1:N){y[i]~dnorm(thetastar[j_i[i]],1/sqrt(sigma_y^2));}",
             plyr::alply(combn(Q,l),2,function(q){
               paste0(
                 "for (j in 1:J){lambda.",paste("X",q,collapse=".",sep=""),"[j]=delta[",l,"]*",
-                paste("lambda0.X",q,"[k_qj[",q,",j]]",collapse="*",sep=""),";}")})})),collapse="\n"),
+                paste("gamma0.X",q,"[k_qj[",q,",j]]",collapse="*",sep=""),";}")})})),collapse="\n"),
         paste(
           unlist(plyr::alply(1:Q,1,function(l){
-            paste0("for(k in 1:K_q[",l,"]){lambda0.X",l,"[k]~dnorm(0,1)}")})),collapse="\n"),
+            paste0("for(k in 1:K_q[",l,"]){gamma0.X",l,"[k]~dnorm(0,1)}")})),collapse="\n"),
         "for(l in 1:Q){delta[l]~dnorm(0,1)}",
         "sigma=abs(sigmarel)",
         "sigma_y=abs(sigma_yrel)",
@@ -65,10 +65,10 @@ Trangucci.fit<-function(GG,initf="random"){
         alpha
       })),
       (function(){x<-lapply(1:GG$Q,function(l){rep(1,GG$K_q[l])})
-      names(x)<-paste0("lambda0.X",1:GG$Q)
+      names(x)<-paste0("gamma0.X",1:GG$Q)
       x})())}}else{
         init=function(){c(GG$hyper[c("sigma","sigma_y","delta","alpha0")],
-                          GG$hyper$lambda1,
+                          GG$hyper$gamma0,
                           GG$lambda,
                           list(GG$alpha),
                           do.call(c,lapply(1:GG$Q,function(l){
@@ -79,13 +79,13 @@ Trangucci.fit<-function(GG,initf="random"){
                             alpha
                           })),
                           (function(){x<-lapply(1:GG$Q,function(l){rep(1,GG$K_q[l])})
-                          names(x)<-paste0("lambda0.X",1:GG$Q)
+                          names(x)<-paste0("gamma0.X",1:GG$Q)
                           x})())}
       }
   model.texte<-model.text(GG)
   parameters.to.save = c("thetastar",
                          names(init()),
-                         paste0("lambda0.X",1:GG$Q),
+                         paste0("gamma0.X",1:GG$Q),
                          unlist(plyr::alply(1:GG$Q,1,function(l){plyr::alply(combn(GG$Q,l),2,function(qq){paste0("lambda.",paste("X",qq,collapse=".",sep=""))})})),
                          unlist(plyr::alply(1:GG$Q,1,function(l){plyr::alply(combn(GG$Q,l),2,function(qq){paste0("alpha." ,paste("X",qq,collapse=".",sep=""))})}))
   )
