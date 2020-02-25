@@ -36,7 +36,7 @@ thetaotherstarf<-function(alpha,alpha0){
 #' sigma_y=Gen_hyper_parameters(XX)$sigma_y
 #' yf(XX,thetastar,sigma_y,3)
 
-yf<-function(XX,thetastar,sigma_y,nrep){
+yotherf<-function(XX,thetastar,sigma_y,nrep){
   Strata<-data.frame(XX$Strata,
                      N_j=XX$N_j,
                      thetastar=thetastar)
@@ -51,7 +51,7 @@ yf<-function(XX,thetastar,sigma_y,nrep){
 #' XX<-Gen_design_variables(N,Q,p)
 #' Gen_hyper_parameters(XX)
 
-Gen_hyper_parameters<-function(XX){
+Gen_hyper_otherparameters<-function(XX){
   #hyper parametres
   sigma_y<-abs(5*rt(1,1))  
   delta<-abs(rnorm(XX$Q))
@@ -87,7 +87,7 @@ Generateother_all<-function(N=NULL,
   list(N=N,Q=Q,p=p,K_q=K_q,hyper=hyper,XX=XX,nrep=nrep,lambda=lambda,alpha=alpha,thetastar=thetastar,y=y)}
 
 
-thetastar.popmean._f<-function(GG){
+thetastar.otherpopmean._f<-function(GG){
   
   XX<-cbind(GG$XX$Xd,Y<-GG$y[,1])
   XX<-merge(XX,data.frame(thetastar=GG$thetastar,Strata=names(GG$thetastar)),by="Strata")
