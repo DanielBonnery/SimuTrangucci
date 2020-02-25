@@ -23,5 +23,6 @@ Create model hyper-parameters and parameters procedure
 }
 \examples{
 N=1000;Q=3;p=3
-GG<-Generate_all(N,Q,p)
+nrep=1
+GG<-Generate_all(N,Q,p,nrep=nrep)
 }

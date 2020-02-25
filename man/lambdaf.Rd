@@ -21,5 +21,5 @@ XX<-Gen_design_variables(N=1000,Q=3,p=4)
 gamma0=gamma0f(XX)
 delta=Gen_hyper_parameters(XX)$delta
 lambda.j.q1...qell.f(XX,gamma0,delta)
-#' lambdaf(XX,gamma0,delta)
+lambdaf(XX,gamma0,delta)
 }

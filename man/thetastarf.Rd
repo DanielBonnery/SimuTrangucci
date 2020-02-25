@@ -16,11 +16,13 @@ Create the thetastar_{Si}^{q1...qell}
 }
 \examples{
 set.seed(1)
-XX<-Gen_design_variables(N=1000,Q=3,p=4)
+N=1000;Q=3;p=4
+XX<-Gen_design_variables(N=N,Q=Q,p=p)
 gamma0=gamma0f(XX)
-delta=Gen_hyper_parameters(XX)$delta
+hyper<-Gen_hyper_parameters(XX)
+delta=hyper$delta
 lambda=lambda.j.q1...qell.f(XX,gamma0,delta)
-sigma=Gen_hyper_parameters(XX)$sigma
+sigma=hyper$sigma
 alpha=alphaSif(lambda,sigma)
 alpha0=1
 thetastarf(alpha,alpha0)

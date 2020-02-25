@@ -42,9 +42,9 @@ graph3<-ggplot(ZZZ,aes(x=mean,     y=posteriormean))+geom_point()+geom_abline(sl
 graph6<-ggplot(reshape2::melt(ZZZ[c("j","thetastar","mean","posteriormean")],id.vars=c("j")),aes(x=j,y=value,colour=variable))+geom_line()
 graph7<-ggplot(reshape2::melt(ZZZ[c("j","thetastar","posteriormean")],id.vars=c("j")),aes(x=j,y=value,colour=variable))+geom_line()
 
-graph8<-ggplot(data.frame(y=1:2250,x=gibbs.samples[[2]]$BUGSoutput$sims.list$sigma),aes(x))+geom_density()+
-  geom_vline(xintercept=gibbs.samples[[2]]$BUGSoutput$mean$sigma)+
-  geom_vline(xintercept=GG$hyper$sigma,colour="red")
+graph8<-ggplot(data.frame(y=1:2250,x=gibbs.samples[[2]]$BUGSoutput$sims.list$sigmarel),aes(x))+geom_density()+
+  geom_vline(xintercept=gibbs.samples[[2]]$BUGSoutput$mean$sigmarel)+
+  geom_vline(xintercept=GG$hyper$sigmarel,colour="red")
 
 graph9<-ggplot(data.frame(y=1:2250,x=gibbs.samples[[2]]$BUGSoutput$sims.list$sigma_y),aes(x))+geom_density()+
   geom_vline(xintercept=gibbs.samples[[2]]$BUGSoutput$mean$sigma_y)+
@@ -67,5 +67,5 @@ graph13<-ggplot(data.frame(y=1:2250,x=gibbs.samples[[2]]$BUGSoutput$sims.list$de
   geom_vline(xintercept=GG$hyper$delta[3],colour="red")
 
 graph14<-ggplot(data.frame(y=gibbs.samples[[2]]$BUGSoutput$mean$delta,x=GG$hyper$delta),aes(x,y))+geom_point()+geom_abline(intercept=0,slope=1)
-X<-data.frame(y=gibbs.samples[[2]]$BUGSoutput$mean$lambda0.X1,x=GG$hyper$lambda1[[1]])
+#X<-data.frame(y=gibbs.samples[[2]]$BUGSoutput$mean$lambda0.X1,x=GG$hyper$lambda1[[1]])
 graph15<-ggplot(X,aes(x,y))+geom_point()+geom_abline(intercept=0,slope=1)

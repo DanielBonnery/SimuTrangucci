@@ -29,7 +29,9 @@ Gen_design_variables<-function(N,Q,p,K_q=sample(2:p,Q,replace=T)){
   J<-dim(Strata)[1]#Definition of J: number of strata
   Strata=cbind(Strata,Strata=paste0("S",1:J))#Defintion of the Strata variable
   rownames(Strata)<-Strata[,"Strata"]
-  merge(data.frame(X,stringsAsFactors = FALSE),data.frame(Strata,stringsAsFactors = FALSE), by=colnames(X))->Xd#Creates Xd: rows:1 to N, columns X1 to XQ and Stratum
+  merge(data.frame(X,stringsAsFactors = FALSE),
+        data.frame(Strata,stringsAsFactors = FALSE),
+        by=colnames(X))->Xd#Creates Xd: rows:1 to N, columns X1 to XQ and Stratum
   Xd[1:Q]<-plyr::llply(Xd[1:Q],as.factor)#Convert columns of Xd to factor
   K_q2<-plyr::laply(Xd[1:Q],nlevels)  #Computes the effective number of levels for each stratum
   names(K_q2)<-vars                   #Rename elements of K_q2
@@ -101,7 +103,7 @@ lambda.j.q1...qell.f<-function(XX,gamma0,delta){
 #' gamma0=gamma0f(XX)
 #' delta=Gen_hyper_parameters(XX)$delta
 #' lambda.j.q1...qell.f(XX,gamma0,delta)
-#' #' lambdaf(XX,gamma0,delta)
+#' lambdaf(XX,gamma0,delta)
 
 lambdaf<-function(XX,gamma0,delta){
   do.call(c,lapply(1:XX$Q,function(ell){
@@ -148,11 +150,13 @@ alphaSif<-function(lambda,sigma){
 #' @param delta an object with same structure than
 #' @examples
 #' set.seed(1)
-#' XX<-Gen_design_variables(N=1000,Q=3,p=4)
+#' N=1000;Q=3;p=4
+#' XX<-Gen_design_variables(N=N,Q=Q,p=p)
 #' gamma0=gamma0f(XX)
-#' delta=Gen_hyper_parameters(XX)$delta
+#' hyper<-Gen_hyper_parameters(XX)
+#' delta=hyper$delta
 #' lambda=lambda.j.q1...qell.f(XX,gamma0,delta)
-#' sigma=Gen_hyper_parameters(XX)$sigma
+#' sigma=hyper$sigma
 #' alpha=alphaSif(lambda,sigma)
 #' alpha0=1
 #' thetastarf(alpha,alpha0)
@@ -262,7 +266,8 @@ Gen_hyper_parameters_model2<-function(XX){
 #' @param XX an output from [Gen_design_variables] 
 #' @examples
 #' N=1000;Q=3;p=3
-#' GG<-Generate_all(N,Q,p)
+#' nrep=1
+#' GG<-Generate_all(N,Q,p,nrep=nrep)
 
 Generate_all<-function(N=NULL,
                        Q=NULL,
