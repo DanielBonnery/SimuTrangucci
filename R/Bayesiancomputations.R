@@ -83,12 +83,12 @@ Trangucci.fit<-function(GG,initf="random"){
                           x})())}
       }
   model.texte<-model.text(GG)
-  parameters.to.save = c("thetastar",
+  parameters.to.save = unique(c("thetastar",
                          names(init()),
                          "sigma_y","sigma",
                          paste0("gamma0.X",1:GG$Q),
                          unlist(plyr::alply(1:GG$Q,1,function(l){plyr::alply(combn(GG$Q,l),2,function(qq){paste0("lambda.",paste("X",qq,collapse=".",sep=""))})})),
-                         unlist(plyr::alply(1:GG$Q,1,function(l){plyr::alply(combn(GG$Q,l),2,function(qq){paste0("alpha." ,paste("X",qq,collapse=".",sep=""))})}))
+                         unlist(plyr::alply(1:GG$Q,1,function(l){plyr::alply(combn(GG$Q,l),2,function(qq){paste0("alpha." ,paste("X",qq,collapse=".",sep=""))})})))
   )
   true.parameters=c(thetastar=GG$thetastar,GG$XX)
   
